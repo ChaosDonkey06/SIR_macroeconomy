@@ -69,11 +69,11 @@ elif use_parallel==1:
 #Steady State Calculations##
 ############################
 
-theta=1/n_target**2;     #calculate disutility of labor parameter theta
+theta = 1/n_target**2;     #calculate disutility of labor parameter theta
                         #so that pre-infection steady state labor is equal to
                         #desired target (using n=(1/theta)^(1/2) pre-infection 
                         #steady state equation)
-A=inc_target/n_target;  #calculate parameter A such that income is equal to
+A = inc_target/n_target;  #calculate parameter A such that income is equal to
                         #desired target, c=inc_target=A*n_target
  
 #steady states
@@ -109,27 +109,25 @@ if do_opt_policy==1:
  
 #initial guess of vectors of ns, ni and nr to solve nonlinear
 #equilibrium equations
-n_vec_guess=nrss*np.ones((3*HH,1)); #guess of vectors for ns,ni,nr
+n_vec_guess = nrss*np.ones((3*HH,1)); #guess of vectors for ns,ni,nr
  
 #If optimal policy is desired, find optimal path for muc to maximize PV utility
 if do_opt_policy==1: #optimal policy
     
     #minimize negative PV utility (i.e. max PV utility) to find opt. path for muc; nonlinear
     #model equations are solved inside getU.m using function get_err.m
-    LB=muc_guess*0-2; #upper bounds
-    UB=muc_guess*0+2; #lower bounds
+    LB = muc_guess*0-2; #upper bounds
+    UB = muc_guess*0+2; #lower bounds
 
     muc_sol = minimize(getU,muc_guess,[],[],[],[],LB,UB,[],opts_fmincon,n_vec_guess,opts_fsolve_fmincon,A,theta,i_ini,pop_ini,pis1,pis2,pis3,pir,pid,betta,Uiss,HH,crss,nrss,Urss,phii,deltav,deltac,kappa)
     
-    muc = np.zeros((HH,1))
-    muc(0:len(muc_sol))=muc_sol
+    muc                   = np.zeros((HH,1))
+    muc[ 0:len(muc_sol) ] = muc_sol
     #save last_solution_opt_policy muc_sol #save solution for possible use in subsequent maximization   
 
- 
 #Given either optimal path for muc or exogenous path for muc,
 #solve nonlinear equilibrium model equations (i.e. adjust guesses ns,nr,ni)
-
-[n_vec,fval,exitflag] = fsolve(@get_err,n_vec_guess,opts_fsolve,A,theta,i_ini,pop_ini,pis1,pis2,pis3,pir,pid,betta,Uiss,HH,crss,nrss,Urss,muc,phii,deltav,deltac,kappa);
+[n_vec,fval,exitflag] = fsolve( get_err,n_vec_guess,opts_fsolve,A,theta,i_ini,pop_ini,pis1,pis2,pis3,pir,pid,betta,Uiss,HH,crss,nrss,Urss,muc,phii,deltav,deltac,kappa);
 if exitflag~=1:
     error('Fsolve could not solve the model')
     
@@ -137,7 +135,7 @@ if exitflag~=1:
 #solution
 
 [err,I,S,R,D,T,Pop,cs,ns,Us,RnotSIRmacro,aggC,aggH,ci,cr,ni,nr,Ui,Ur,U,pid_endo] = get_err(n_vec,A,theta,i_ini,pop_ini,pis1,pis2,pis3,pir,pid,betta,Uiss,HH,crss,nrss,Urss,muc,phii,deltav,deltac,kappa)
-disp(['Max. abs. error in equilib. equations:',num2str(max(abs(err)))]);
+disp(['Max. abs. error in equilib. equations:',num2str(max(abs(err)))])
 disp(' ')
 RnotSIRmacro
  
