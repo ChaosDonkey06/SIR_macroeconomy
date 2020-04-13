@@ -9,11 +9,12 @@ from calibrate_pis import *
 def go_calibrate_pis(HH,i_ini,pop_ini,pir,pid,pis1_shr_target,pis2_shr_target,RplusD_target,phii,crss,nrss,scale1,scale2):
     
     # [sol,fval,exitflag]
-    scale1=1000000
-    scale2=1000 #scale pis for numerical solver
-    pi_guess = 
-    x = fsolve(calibrate_pis,[0.2,0.2,0.2], xtol= 1e-9,
-        args= (HH,i_ini,pop_ini,pir,pid,pis1_shr_target,pis2_shr_target,RplusD_target,phii,crss,nrss,scale1,scale2,) )
+    scale1 = 1000000
+    scale2 = 1000     #scale pis for numerical solver
+    error_guess = np.array( [0.2,0.2,0.2] )
+
+     = fsolve(calibrate_pis_zeros,error_guess, xtol= 1e-9,
+        args = (HH,i_ini,pop_ini,pir,pid,pis1_shr_target,pis2_shr_target,RplusD_target,phii,crss,nrss,scale1,scale2,) )
 
     if exitflag~=1
         error('Fsolve could not calibrate the SIR model')
@@ -29,8 +30,6 @@ def go_calibrate_pis(HH,i_ini,pop_ini,pir,pid,pis1_shr_target,pis2_shr_target,Rp
 
     return pis1, pis2, pis3, RnotSIR
 
-
- 
 
 #ia=2;
 #ib=3;
@@ -51,4 +50,3 @@ def go_calibrate_pis(HH,i_ini,pop_ini,pir,pid,pis1_shr_target,pis2_shr_target,Rp
 #plot(T);axis tight;
 #title('T');
 #suptitle('SIR Model, Calibration')
-
