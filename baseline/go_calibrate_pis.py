@@ -13,20 +13,17 @@ def go_calibrate_pis(HH,i_ini,pop_ini,pir,pid,pis1_shr_target,pis2_shr_target,Rp
     scale2 = 1000     #scale pis for numerical solver
     error_guess = np.array( [0.2,0.2,0.2] )
 
-     = fsolve(calibrate_pis_zeros,error_guess, xtol= 1e-9,
+    sol = fsolve(calibrate_pis_zeros,error_guess, xtol= 1e-9,
         args = (HH,i_ini,pop_ini,pir,pid,pis1_shr_target,pis2_shr_target,RplusD_target,phii,crss,nrss,scale1,scale2,) )
 
-    if exitflag~=1
-        error('Fsolve could not calibrate the SIR model')
-    else
-        [err,pis1,pis2,pis3,RnotSIR,I,S,D,R,T] = calibrate_pis(sol,HH,i_ini,pop_ini,pir,pid,pis1_shr_target,pis2_shr_target,RplusD_target,phii,crss,nrss,scale1,scale2);
-        
-        disp(['Max. abs. error in calibration targets:',num2str(max(abs(err)))])
-        disp([' '])
-        pis1=sol(1)/scale1
-        pis2=sol(2)/scale2
-        pis3=sol(3)
-        RnotSIR
+
+    [err,pis1,pis2,pis3,RnotSIR,I,S,D,R,T] = calibrate_pis(sol,HH,i_ini,pop_ini,pir,pid,pis1_shr_target,pis2_shr_target,RplusD_target,phii,crss,nrss,scale1,scale2);
+    
+    print('Max. abs. error in calibration targets: {}\n'.format(max(abs(err))))
+    pis1=sol[0]/scale1
+    pis2=sol[1]/scale2
+    pis3=sol[2]
+    RnotSIR
 
     return pis1, pis2, pis3, RnotSIR
 

@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize
+from go_calibrate_pis import *
+from get_err import *
 ###################################################### 
 ##Parameters, calibration targets and other settings##
 ######################################################
@@ -52,19 +54,6 @@ do_opt_policy=0;    #switch: if = 0, model is solved and simulated with
 use_parallel=0;     #when optimal policy is computed, use_parallel=1 uses 
                     #parallel computing to maximize PV utility using fmincon.
  
-#nonlinear solver and minimizer settings
-opts_fsolve = optimoptions('fsolve','Display','iter','TolFun',1e-9); #options for fsolve
-opts_fsolve_fmincon =optimoptions('fsolve','Display','off','TolFun',1e-9); #options for fsolve used opt. policy calcs. (fmincon)
-
-if use_parallel==0:
-    opts_fmincon=optimoptions('fmincon','Display','iter','TolFun',1e-7,'MaxFunctionEvaluations',2000,'FiniteDifferenceStepSize',1e-2) #options for fmincon w/o parallel comp.
-
-elif use_parallel==1:
-    #opts_fmincon=optimoptions('fmincon','Display','iter','TolFun',1e-7,'MaxFunctionEvaluations',2000,'UseParallel',true,'FiniteDifferenceStepSize',1e-2) #options for fmincon with parallel comp.
-    #opts_fmincon=optimoptions('fmincon','Display','iter','TolFun',1e-6,'MaxFunctionEvaluations',10000,'UseParallel',true,'FiniteDifferenceStepSize',1e-2) #options for fmincon with parallel comp.
-    #opts_fmincon=optimoptions('fmincon','Display','iter','TolFun',1e-6,'MaxFunctionEvaluations',5000,'UseParallel',true,'FiniteDifferenceStepSize',1e-3)
-    opts_fmincon=optimoptions('fmincon','Display','iter','TolFun',1e-7,'MaxFunctionEvaluations',10000,'UseParallel',true)
-
 ############################
 #Steady State Calculations##
 ############################
@@ -92,8 +81,11 @@ Uiss            = 1/(1-(1-deltac)*betta*(1-pir-pid))*(uiss +(1-deltac)*betta*pir
 if Uiss-Urss>0: 
     print( 'Error: parameterization implies Uiss>Urss: {}'.format(Uiss-Urss) )
  
+scale1 = 1000000
+scale2 = 1000     #scale pis for numerical solver
+
 #calibrate the pis's in T-function
-go_calibrate_pis
+pis1, pis2, pis3, RnotSIR = go_calibrate_pis(HH,i_ini,pop_ini,pir,pid,pis1_shr_target,pis2_shr_target,RplusD_target,phii,crss,nrss,scale1,scale2)
  
 #initial guess for optimal muc and load last solution of optimal policy 
 #allocations if you dont want to start maximization of PV utility from scratch.
@@ -127,8 +119,9 @@ if do_opt_policy==1: #optimal policy
 
 #Given either optimal path for muc or exogenous path for muc,
 #solve nonlinear equilibrium model equations (i.e. adjust guesses ns,nr,ni)
-[n_vec,fval,exitflag] = fsolve( get_err,n_vec_guess,opts_fsolve,A,theta,i_ini,pop_ini,pis1,pis2,pis3,pir,pid,betta,Uiss,HH,crss,nrss,Urss,muc,phii,deltav,deltac,kappa);
-if exitflag~=1:
+[n_vec,fval,exitflag] = fsolve( get_err,n_vec_guess,opts_fsolve,A,theta,i_ini,pop_ini,pis1,pis2,pis3,pir,pid,betta,Uiss,HH,crss,nrss,Urss,muc,phii,deltav,deltac,kappa)
+
+if exitflag!=1:
     error('Fsolve could not solve the model')
     
 #get allocations given either exogenous or optimal path for muc at ns,ni,nr
